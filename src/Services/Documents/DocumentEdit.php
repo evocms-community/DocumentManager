@@ -63,7 +63,7 @@ class DocumentEdit extends DocumentCreate
         $this->documentData = $documentData;
         $this->events = $events;
         $this->cache = $cache;
-        $this->currentDate = EvolutionCMS()->timestamp((int)get_by_key($_SERVER, 'REQUEST_TIME', 0));
+        $this->currentDate = EvolutionCMS()->timestamp();
 
     }
 
@@ -114,8 +114,9 @@ class DocumentEdit extends DocumentCreate
         // invoke OnBeforeDocFormSave event
         if ($this->events) {
             EvolutionCMS()->invokeEvent("OnBeforeDocFormSave", array(
-                "mode" => "upd",
-                "user" => $this->documentData['id'],
+                'mode' => 'upd',
+                'id'   => $this->documentData['id'],
+                'doc'  => $this->documentData
             ));
         }
 
@@ -128,8 +129,9 @@ class DocumentEdit extends DocumentCreate
         if ($this->events) {
             // invoke OnDocFormSave event
             EvolutionCMS()->invokeEvent("OnDocFormSave", array(
-                "mode" => "upd",
-                "id" => $this->documentData['id']
+                'mode' => 'upd',
+                'id'   => $this->documentData['id'],
+                'doc'  => $this->documentData
             ));
         }
 
@@ -165,8 +167,6 @@ class DocumentEdit extends DocumentCreate
     public function prepareEditDocument()
     {
         $existingDocument = SiteContent::query()->withTrashed()->find($this->documentData['id'])->toArray();
-        $this->documentData['editedby'] = EvolutionCMS()->getLoginUserID();
-        $this->documentData['editedon'] = $this->currentDate;
         $this->documentData['oldparent'] = $existingDocument['parent'];
         if (!isset($this->documentData['parent'])) {
             $this->documentData['parent'] = $this->documentData['oldparent'];
