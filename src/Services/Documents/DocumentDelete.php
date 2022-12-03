@@ -133,12 +133,14 @@ class DocumentDelete extends DocumentCreate
             ->whereIn('id', $documentDeleteIds)
             ->update(['deleted' => 1,
                 'deletedby' => EvolutionCMS()->getLoginUserID(),
-                'deletedon' => time()]);
+                'deletedon' => EvolutionCMS()->timestamp()
+            ]);
 
 
         if ($this->cache) {
             EvolutionCMS()->clearCache('full');
         }
+        
         return $document;
     }
 
