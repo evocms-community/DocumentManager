@@ -63,8 +63,7 @@ class DocumentCreate implements DocumentServiceInterface
         $this->documentData = $documentData;
         $this->events = $events;
         $this->cache = $cache;
-        $this->currentDate = EvolutionCMS()->timestamp((int)get_by_key($_SERVER, 'REQUEST_TIME', 0));
-
+        $this->currentDate = EvolutionCMS()->timestamp();
     }
 
     /**
@@ -114,12 +113,12 @@ class DocumentCreate implements DocumentServiceInterface
         // invoke OnBeforeDocFormSave event
         if ($this->events) {
             EvolutionCMS()->invokeEvent("OnBeforeDocFormSave", array(
-                "mode" => "new",
-                "user" => $this->documentData['id'],
+                'mode' => 'new',
+                'id'   => $this->documentData['id'],
+                'doc'  => $this->documentData
             ));
         }
-//var_dump($this->documentData);
-//        die();
+
         if (isset($this->documentData['pub_date']) && !is_numeric($this->documentData['pub_date'])) {
             unset($this->documentData['pub_date']);
         }
@@ -136,8 +135,9 @@ class DocumentCreate implements DocumentServiceInterface
         if ($this->events) {
             // invoke OnDocFormSave event
             EvolutionCMS()->invokeEvent("OnDocFormSave", array(
-                "mode" => "new",
-                "id" => $this->documentData['id']
+                'mode' => 'new',
+                'id'   => $this->documentData['id'],
+                'doc'  => $this->documentData
             ));
         }
 
@@ -297,10 +297,6 @@ class DocumentCreate implements DocumentServiceInterface
         
         $this->documentData['menuindex'] = !empty($this->documentData['menuindex']) ? (int)$this->documentData['menuindex'] : 0;
 
-        $this->documentData['createdby'] = EvolutionCMS()->getLoginUserID();
-        $this->documentData['editedby'] = EvolutionCMS()->getLoginUserID();
-        $this->documentData['createdon'] = $this->currentDate;
-        $this->documentData['editedon'] = $this->currentDate;
         // invoke OnBeforeDocFormSave event
         switch (EvolutionCMS()->getConfig('docid_incrmnt_method')) {
             case '1':
