@@ -116,7 +116,7 @@ class DocumentEdit extends DocumentCreate
             EvolutionCMS()->invokeEvent("OnBeforeDocFormSave", array(
                 'mode' => 'upd',
                 'id'   => $this->documentData['id'],
-                'doc'  => $this->documentData
+                'doc'  => &$this->documentData
             ));
         }
 

@@ -115,7 +115,7 @@ class DocumentCreate implements DocumentServiceInterface
             EvolutionCMS()->invokeEvent("OnBeforeDocFormSave", array(
                 'mode' => 'new',
                 'id'   => $this->documentData['id'],
-                'doc'  => $this->documentData
+                'doc'  => &$this->documentData
             ));
         }
 
