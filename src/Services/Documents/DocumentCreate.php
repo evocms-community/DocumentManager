@@ -331,7 +331,7 @@ class DocumentCreate implements DocumentServiceInterface
         // update parent folder status
         if ($this->documentData['parent'] != 0) {
             $fields = ['isfolder' => 1];
-            SiteContent::withTrashed()->where('id', $this->documentData['parent'])->update($fields);
+            SiteContent::withTrashed()->where('id', $this->documentData['parent'])->where('isfolder', 0)->update($fields);
         }
     }
 
