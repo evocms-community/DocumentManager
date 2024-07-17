@@ -322,16 +322,17 @@ class DocumentCreate implements DocumentServiceInterface
     public function saveTVs()
     {
         foreach ($this->tvs['save'] as $value) {
-            \EvolutionCMS\Models\SiteTmplvarContentvalue::updateOrCreate([
+            SiteTmplvarContentvalue::updateOrCreate([
                 'contentid' => $this->documentData['id'], 'tmplvarid' => $value['id']
             ], ['value' => $value['value']]);
         }
-        if($this->mode == 'edit' && $this->tvs['delete']) {
-            \EvolutionCMS\Models\SiteTmplvarContentvalue::query()
+        if($this->mode == 'edit' && isset($this->tvs['delete'])) {
+            SiteTmplvarContentvalue::query()
                 ->whereIn('tmplvarid', $this->tvs['delete'])
                 ->where('contentid', $this->documentData['id'])
                 ->delete();
         }
+        $this->tvs = [];
     }
 
     public function updateParent()
