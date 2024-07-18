@@ -323,10 +323,12 @@ class DocumentCreate implements DocumentServiceInterface
 
     public function saveTVs()
     {
-        foreach ($this->tvs['save'] as $value) {
-            SiteTmplvarContentvalue::updateOrCreate([
-                'contentid' => $this->documentData['id'], 'tmplvarid' => $value['id']
-            ], ['value' => $value['value']]);
+        if(isset($this->tvs['save'])) {
+            foreach ($this->tvs['save'] as $value) {
+                SiteTmplvarContentvalue::updateOrCreate([
+                    'contentid' => $this->documentData['id'], 'tmplvarid' => $value['id']
+                ], ['value' => $value['value']]);
+            }
         }
         if($this->mode == 'edit' && isset($this->tvs['delete'])) {
             SiteTmplvarContentvalue::query()
