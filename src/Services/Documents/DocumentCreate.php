@@ -312,7 +312,8 @@ class DocumentCreate implements DocumentServiceInterface
                 });
             });
         foreach ($tmplvars as $tmplvar) {
-            if (isset($this->documentData[$tmplvar->name]) && !is_null($this->documentData[$tmplvar->name]) && $this->documentData[$tmplvar->name] != $tmplvar->default_text) {
+            if(!isset($this->documentData[$tmplvar->name])) continue;
+            if (!is_null($this->documentData[$tmplvar->name]) && $this->documentData[$tmplvar->name] != $tmplvar->default_text) {
                 $this->tvs['save'][] = ['id' => $tmplvar->id, 'value' => $this->documentData[$tmplvar->name]];
             } else {
                 $this->tvs['delete'][] = $tmplvar->id;
