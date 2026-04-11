@@ -1,11 +1,10 @@
-<?php namespace EvolutionCMS\DocumentManager\Services\Documents;
+<?php
+namespace EvolutionCMS\DocumentManager\Services\Documents;
 
 use EvolutionCMS\Exceptions\ServiceActionException;
 use EvolutionCMS\Exceptions\ServiceValidationException;
-use EvolutionCMS\Interfaces\ServiceInterface;
 use EvolutionCMS\Models\SiteContent;
-use EvolutionCMS\Models\SiteTmplvarTemplate;
-use \EvolutionCMS\Models\User;
+use EvolutionCMS\Models\User;
 use Illuminate\Support\Facades\Lang;
 
 class DocumentPublish extends DocumentCreate
@@ -63,7 +62,6 @@ class DocumentPublish extends DocumentCreate
         $this->documentData = $documentData;
         $this->events = $events;
         $this->cache = $cache;
-
     }
 
     /**
@@ -82,9 +80,8 @@ class DocumentPublish extends DocumentCreate
     public function getValidationMessages(): array
     {
         return [
-            'id.required' => Lang::get("global.required_field", ['field' => 'id']),
+            'id.required' => Lang::get('global.required_field', ['field' => 'id']),
         ];
-
     }
 
     /**
@@ -95,9 +92,8 @@ class DocumentPublish extends DocumentCreate
     public function process(): \Illuminate\Database\Eloquent\Model
     {
         if (!$this->checkRules()) {
-            throw new ServiceActionException(\Lang::get('global.error_no_privileges'));
+            throw new ServiceActionException(Lang::get('global.error_no_privileges'));
         }
-
 
         if (!$this->validate()) {
             $exception = new ServiceValidationException();
@@ -105,14 +101,42 @@ class DocumentPublish extends DocumentCreate
             throw $exception;
         }
 
-        $document = SiteContent::query()->withTrashed()->find($this->documentData['id']);
+        $document = SiteContent::query()
+            ->withTrashed()
+            ->find($this->documentData['id']);
+
+        if ($this->events) {
+            // invoke OnBeforeDocPublish event
+            EvolutionCMS()->invokeEvent('OnBeforeDocPublish', [
+                'id' => &$this->documentData['id'],
+                'document' => &$document, // allow reassign object
+            ]);
+        }
 
         $document->published = 1;
         $document->publishedby = EvolutionCMS()->getLoginUserID();
+        $document->publishedon = evo()->timestamp();
+
+        if ($document->pub_date > $document->publishedon) {
+            $document->pub_date = 0;
+        }
+        // $document->unpub_date = 0;
+
         $document->save();
+        $document->refresh();
+
+        if ($this->events) {
+            // invoke OnDocPublish event
+            EvolutionCMS()->invokeEvent('OnDocPublish', [
+                'id' => &$this->documentData['id'],
+                'document' => &$document, // allow reassign object
+            ]);
+        }
+
         if ($this->cache) {
             EvolutionCMS()->clearCache('full');
         }
+
         return $document;
     }
 
@@ -123,17 +147,4 @@ class DocumentPublish extends DocumentCreate
     {
         return EvolutionCMS()->hasPermission('publish_document');
     }
-
-    /**
-     * @return bool
-     */
-    public function validate(): bool
-    {
-        $validator = \Validator::make($this->documentData, $this->validate, $this->messages);
-        $this->validateErrors = $validator->errors()->toArray();
-        return !$validator->fails();
-    }
-
-
-
 }
